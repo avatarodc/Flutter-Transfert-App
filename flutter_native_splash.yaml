@@ -1,0 +1,12 @@
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: "assets/images/logo/pis.jpeg"
+  branding: false
+  android_12:
+    color: "#FFFFFF"
+    image: "assets/images/logo/pis.jpeg"
+    icon_background_color: "#FFFFFF"
+  fullscreen: true
+  android: true
+  ios: false
+  web: false
