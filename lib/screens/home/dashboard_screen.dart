@@ -1,5 +1,3 @@
-// lib/screens/home/dashboard_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'widgets/balance_qr_card.dart';
@@ -8,7 +6,7 @@ import 'widgets/transfer_form_card.dart';
 import 'widgets/recent_transactions_card.dart';    
 import '../../models/transaction.dart';         
 
-class DashboardScreen extends StatefulWidget {  // Changé en StatefulWidget
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
@@ -43,28 +41,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: Text(
-        'Tableau de bord',
-        style: GoogleFonts.poppins(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+      backgroundColor: const Color(0xFF8E21F0),
+      elevation: 0,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF8E21F0),
+              const Color(0xFF8E21F0).withOpacity(0.8),
+            ],
+          ),
         ),
       ),
-      backgroundColor: const Color(0xFF001B8A),
-      foregroundColor: Colors.white,
-      elevation: 0,
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.dashboard_rounded, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Accueil',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {
-            debugPrint('Notifications clicked');
-          },
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+            onPressed: () {
+              debugPrint('Notifications clicked');
+            },
+          ),
         ),
-        IconButton(
-          icon: const Icon(Icons.person_outline),
-          onPressed: () {
-            debugPrint('Profile clicked');
-          },
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.person_outline, color: Colors.white),
+            onPressed: () {
+              debugPrint('Profile clicked');
+            },
+          ),
         ),
       ],
     );
@@ -73,51 +110,79 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.white,
       appBar: _buildAppBar(),
-      body: Stack(
-        children: [
-          Container(
-            height: 100,
-            color: const Color(0xFF001B8A),
-          ),
-          RefreshIndicator(
-            color: const Color(0xFF001B8A),
-            onRefresh: () async {
-              await Future.delayed(const Duration(seconds: 1));
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const BalanceQrCard(
-                      balance: '150.000',
-                      qrData: 'user-123456789',
-                    ),
-                    const SizedBox(height: 24),
-
-                    const QuickActions(),
-                    const SizedBox(height: 24),
-
-                    TransferFormCard(
-                      onTransfer: _handleTransfer,
-                    ),
-                    const SizedBox(height: 24),
-
-                    RecentTransactionsCard(
-                      transactions: _mockTransactions,
-                      onViewAll: _handleViewAllTransactions,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+      body: RefreshIndicator(
+        color: const Color(0xFF8E21F0),
+        onRefresh: () async {
+          await Future.delayed(const Duration(seconds: 1));
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 24.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const BalanceQrCard(
+                    balance: '150.000',
+                    qrData: 'user-123456789',
+                  ),
                 ),
-              ),
+                const SizedBox(height: 24),
+                const QuickActions(),
+                const SizedBox(height: 24),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: TransferFormCard(
+                    onTransfer: _handleTransfer,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: RecentTransactionsCard(
+                    transactions: _mockTransactions,
+                    onViewAll: _handleViewAllTransactions,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

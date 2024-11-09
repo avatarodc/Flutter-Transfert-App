@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/home/dashboard_screen.dart';
@@ -12,7 +13,7 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
+      statusBarIconBrightness: Brightness.light,
       systemNavigationBarColor: Colors.white,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
@@ -28,25 +29,33 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     FlutterNativeSplash.remove();
     return MaterialApp(
-      title: 'Wave Clone',
+      title: 'MY MONEY',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF001B8A),
-          primary: const Color(0xFF001B8A),
+          seedColor: const Color(0xFF8E21F0),
+          primary: const Color(0xFF8E21F0),
         ),
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
+        textTheme: GoogleFonts.poppinsTextTheme(
+          Theme.of(context).textTheme,
+        ),
+        appBarTheme: AppBarTheme(
           backgroundColor: Colors.white,
-          foregroundColor: Color(0xFF001B8A),
+          foregroundColor: const Color(0xFF8E21F0),
           elevation: 0,
           centerTitle: true,
           systemOverlayStyle: SystemUiOverlayStyle.dark,
+          titleTextStyle: GoogleFonts.poppins(
+            color: const Color(0xFF8E21F0),
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -57,7 +66,7 @@ class MyApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF001B8A), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF8E21F0), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -68,25 +77,27 @@ class MyApp extends StatelessWidget {
             borderSide: const BorderSide(color: Colors.red, width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          labelStyle: const TextStyle(color: Color(0xFF666666)),
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          errorStyle: const TextStyle(
+          labelStyle: GoogleFonts.poppins(color: const Color(0xFF666666)),
+          hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
+          errorStyle: GoogleFonts.poppins(
             color: Colors.red,
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
+          prefixIconColor: const Color(0xFF8E21F0),
+          suffixIconColor: const Color(0xFF8E21F0),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF001B8A),
+            backgroundColor: const Color(0xFF8E21F0),
             foregroundColor: Colors.white,
-            elevation: 0,
+            elevation: 4,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
             minimumSize: const Size.fromHeight(50),
-            textStyle: const TextStyle(
+            textStyle: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -94,15 +105,23 @@ class MyApp extends StatelessWidget {
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFF001B8A),
+            foregroundColor: const Color(0xFF8E21F0),
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            textStyle: const TextStyle(
+            textStyle: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
-        // Animation de page par défaut
+        cardTheme: CardTheme(
+          color: Colors.white,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+        shadowColor: Colors.black.withOpacity(0.1),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
             TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -111,35 +130,33 @@ class MyApp extends StatelessWidget {
         ),
       ),
       initialRoute: '/',
-// Dans la méthode onGenerateRoute du fichier main.dart
-onGenerateRoute: (settings) {
-  switch (settings.name) {
-    case '/':
-      return MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
-        settings: settings,
-      );
-    case '/register':
-      return MaterialPageRoute(
-        builder: (_) => const RegisterScreen(),
-        settings: settings,
-      );
-    case '/dashboard':
-      return MaterialPageRoute(
-        builder: (_) => const DashboardScreen(),
-        settings: settings,
-      );
-    default:
-      return MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
-        settings: settings,
-      );
-  }
-},
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case '/':
+            return MaterialPageRoute(
+              builder: (_) => const LoginScreen(),
+              settings: settings,
+            );
+          case '/register':
+            return MaterialPageRoute(
+              builder: (_) => const RegisterScreen(),
+              settings: settings,
+            );
+          case '/dashboard':
+            return MaterialPageRoute(
+              builder: (_) => const DashboardScreen(),
+              settings: settings,
+            );
+          default:
+            return MaterialPageRoute(
+              builder: (_) => const LoginScreen(),
+              settings: settings,
+            );
+        }
+      },
       builder: (context, child) {
         return GestureDetector(
           onTap: () {
-            // Ferme le clavier quand on tape en dehors d'un champ
             FocusScope.of(context).unfocus();
           },
           child: child,
