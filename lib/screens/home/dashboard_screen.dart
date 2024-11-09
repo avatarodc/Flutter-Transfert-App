@@ -16,199 +16,132 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<RecentTransactionsCardState> _transactionsCardKey = GlobalKey<RecentTransactionsCardState>();
+  final ScrollController _scrollController = ScrollController();
+  double _scrollProgress = 0.0;
 
-  void _handleTransfer(String type, String recipient, double amount) {
-    debugPrint('Type: $type, Recipient: $recipient, Amount: $amount');
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
   }
 
-  void _handleViewAllTransactions() {
-    Navigator.pushNamed(context, '/transactions');
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final scrollPosition = _scrollController.position.pixels;
+    final maxScroll = 100.0;
+    
+    setState(() {
+      _scrollProgress = (scrollPosition / maxScroll).clamp(0.0, 1.0);
+    });
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final Color backgroundColor = Color.lerp(
+      Colors.white,
+      const Color(0xFF8E21F0),
+      _scrollProgress,
+    )!;
+
+    final Color iconColor = Color.lerp(
+      const Color(0xFF8E21F0),
+      Colors.white,
+      _scrollProgress,
+    )!;
+
+    final Color containerColor = Color.lerp(
+      const Color(0xFF8E21F0).withOpacity(0.1),
+      Colors.white.withOpacity(0.2),
+      _scrollProgress,
+    )!;
+
     return AppBar(
-      backgroundColor: const Color(0xFF8E21F0),
-      elevation: 0,
+      backgroundColor: backgroundColor,
+      elevation: _scrollProgress * 4,
       toolbarHeight: 70,
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF8E21F0),
-              const Color(0xFF9C47FF),
-              const Color(0xFFAB69FF),
-            ],
-            stops: const [0.0, 0.5, 1.0],
+      centerTitle: false,
+      automaticallyImplyLeading: false,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Opacity(
+          opacity: _scrollProgress,
+          child: Container(
+            height: 1,
+            color: Colors.white.withOpacity(0.2),
           ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.05),
-                ),
-              ),
-            ),
-            Positioned(
-              left: -30,
-              bottom: -30,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.05),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
-      title: Row(
-        children: [
-          TweenAnimationBuilder(
-            duration: const Duration(milliseconds: 500),
-            tween: Tween<double>(begin: 0, end: 1),
-            builder: (context, double value, child) {
-              return Transform.scale(
-                scale: value,
-                child: child,
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.dashboard_rounded,
-                color: Colors.white,
-                size: 22,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          TweenAnimationBuilder(
-            duration: const Duration(milliseconds: 700),
-            tween: Tween<double>(begin: 0, end: 1),
-            builder: (context, double value, child) {
-              return Opacity(
-                opacity: value,
-                child: Transform.translate(
-                  offset: Offset(-20 * (1 - value), 0),
-                  child: child,
-                ),
-              );
-            },
-            child: Text(
-              'Accueil',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-        ],
+      title: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: containerColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          Icons.dashboard_rounded,
+          color: iconColor,
+          size: 24,
+        ),
       ),
       actions: [
-        // ... Reste du code des actions
-        TweenAnimationBuilder(
-          duration: const Duration(milliseconds: 900),
-          tween: Tween<double>(begin: 0, end: 1),
-          builder: (context, double value, child) {
-            return Transform.scale(
-              scale: value,
-              child: child,
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
-            ),
-            child: Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined, 
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                  onPressed: () {
-                    debugPrint('Notifications clicked');
-                  },
+        // Bouton Notifications
+        Container(
+          margin: const EdgeInsets.only(right: 8),
+          decoration: BoxDecoration(
+            color: containerColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Stack(
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.notifications_outlined,
+                  color: iconColor,
+                  size: 24,
                 ),
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
+                onPressed: () {
+                  debugPrint('Notifications clicked');
+                },
+              ),
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: backgroundColor,
+                      width: 1.5,
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        TweenAnimationBuilder(
-          duration: const Duration(milliseconds: 1100),
-          tween: Tween<double>(begin: 0, end: 1),
-          builder: (context, double value, child) {
-            return Transform.scale(
-              scale: value,
-              child: child,
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
+        // Bouton Profil
+        Container(
+          margin: const EdgeInsets.only(right: 16),
+          decoration: BoxDecoration(
+            color: containerColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.person_outline,
+              color: iconColor,
+              size: 24,
             ),
-            child: IconButton(
-              icon: const Icon(
-                Icons.person_outline,
-                color: Colors.white,
-                size: 22,
-              ),
-              onPressed: () {
-                _scaffoldKey.currentState?.openEndDrawer();
-              },
-            ),
+            onPressed: () {
+              _scaffoldKey.currentState?.openEndDrawer();
+            },
           ),
         ),
       ],
@@ -216,22 +149,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _handleRefresh() async {
-    // Rafraîchir les transactions
     await _transactionsCardKey.currentState?.refresh();
-    // Ajoutez ici d'autres rafraîchissements si nécessaire
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       appBar: _buildAppBar(),
       endDrawer: const CustomDrawer(),
       body: RefreshIndicator(
         color: const Color(0xFF8E21F0),
         onRefresh: _handleRefresh,
         child: SingleChildScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -246,7 +178,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withOpacity(0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -262,7 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withOpacity(0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -270,7 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   child: RecentTransactionsCard(
                     key: _transactionsCardKey,
-                    onViewAll: _handleViewAllTransactions,
+                    onViewAll: () {}, // Fonction vide car on ne navigue plus
                   ),
                 ),
                 const SizedBox(height: 16),

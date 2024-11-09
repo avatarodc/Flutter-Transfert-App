@@ -75,3 +75,40 @@ class User {
     );
   }
 }
+
+
+class Role {
+  final int id;
+  final String nom;
+  final String? dateCreation;
+  final String? dateModification;
+
+  Role({
+    required this.id,
+    required this.nom,
+    this.dateCreation,
+    this.dateModification,
+  });
+
+  factory Role.fromJson(Map<String, dynamic> json) {
+    return Role(
+      id: json['id'],
+      nom: json['nom'],
+      dateCreation: json['dateCreation'],
+      dateModification: json['dateModification'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'nom': nom,
+    'dateCreation': dateCreation,
+    'dateModification': dateModification,
+  };
+}
+
+enum NotificationType {
+  EMAIL,
+  SMS,
+  BOTH
+}

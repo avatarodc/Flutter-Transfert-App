@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../models/transaction.dart';
 import '../../../services/transaction_service.dart';
+import 'all_transactions_page.dart';
+
 
 class RecentTransactionsCard extends StatefulWidget {
   final VoidCallback onViewAll;
@@ -20,6 +22,7 @@ class RecentTransactionsCardState extends State<RecentTransactionsCard> {
   List<Transaction> _transactions = [];
   bool _isLoading = true;
   String? _error;
+  static const int _maxTransactions = 5; // Nombre maximum de transactions à afficher
 
   @override
   void initState() {
@@ -41,7 +44,8 @@ class RecentTransactionsCardState extends State<RecentTransactionsCard> {
       final transactions = await _transactionService.getMyTransactions();
       
       setState(() {
-        _transactions = transactions;
+        // Prendre les 5 dernières transactions
+        _transactions = transactions.take(_maxTransactions).toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -87,9 +91,9 @@ class RecentTransactionsCardState extends State<RecentTransactionsCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Transactions',
+                        'Récents Transactions',
                         style: GoogleFonts.poppins(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF8E21F0),
                           letterSpacing: 0.5,
@@ -99,40 +103,15 @@ class RecentTransactionsCardState extends State<RecentTransactionsCard> {
                     ],
                   ),
                 ),
-                Row(
-                  children: [
-                    if (_isLoading)
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8E21F0)),
-                        ),
-                      ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: widget.onViewAll,
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        'Voir tout',
-                        style: GoogleFonts.poppins(
-                          color: const Color(0xFF8E21F0),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
+                if (_isLoading)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8E21F0)),
                     ),
-                  ],
-                ),
+                  ),
               ],
             ),
             const SizedBox(height: 20),
@@ -177,97 +156,133 @@ class RecentTransactionsCardState extends State<RecentTransactionsCard> {
                 ),
               )
             else
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _transactions.length,
-                separatorBuilder: (context, index) => Divider(
-                  color: Colors.grey[100],
-                  thickness: 1,
-                  height: 24,
-                ),
-                itemBuilder: (context, index) {
-                  final transaction = _transactions[index];
-                  return Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: transaction.type.color.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            transaction.type.icon,
-                            color: transaction.type.color,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+              Column(
+                children: [
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _transactions.length,
+                    separatorBuilder: (context, index) => Divider(
+                      color: Colors.grey[100],
+                      thickness: 1,
+                      height: 24,
+                    ),
+                    itemBuilder: (context, index) {
+                      final transaction = _transactions[index];
+                      return Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: transaction.type.color.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                transaction.type.icon,
+                                color: transaction.type.color,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Flexible(
-                                    child: Text(
-                                      transaction.formattedAmount,
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15,
-                                        color: Colors.black87,
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          transaction.formattedAmount,
+                                          style: GoogleFonts.poppins(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                            color: Colors.black87,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: transaction.type.color.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          transaction.type.label,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: transaction.type.color,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    transaction.recipient,
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.grey[700],
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: transaction.type.color.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      transaction.type.label,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: transaction.type.color,
-                                      ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    transaction.formattedDate,
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.grey[500],
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                transaction.recipient,
-                                style: GoogleFonts.poppins(
-                                  color: Colors.grey[700],
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                transaction.formattedDate,
-                                style: GoogleFonts.poppins(
-                                  color: Colors.grey[500],
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // Bouton Voir plus
+                 // Dans votre RecentTransactionsCard, modifiez le onPressed du bouton "Voir plus":
+
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AllTransactionsPage(),
+                      ),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFF8E21F0).withOpacity(0.1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
                     ),
-                  );
-                },
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Voir plus de transactions',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF8E21F0),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                ],
               ),
           ],
         ),
