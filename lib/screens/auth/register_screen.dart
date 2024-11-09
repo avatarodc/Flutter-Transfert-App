@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/user_service.dart';
+import '../../services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -78,7 +79,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      final userService = UserService();
+      final apiService = ApiService();
+      final userService = UserService(apiService);
       final response = await userService.register(
         nomComplet: _nomCompletController.text,
         numeroTelephone: _phoneController.text,

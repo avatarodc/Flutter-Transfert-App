@@ -8,11 +8,14 @@ import 'dart:math';
 
 class AuthService {
   final storage = const FlutterSecureStorage();
+  static const String TOKEN_KEY = 'jwt_token';
+  Timer? _tokenRefreshTimer;
 
   Future<AuthResponse> login(String phone, String password) async {
     try {
-      print('Tentative de connexion à : ${ApiConfig.baseUrl}/auth/login');
-      print('Données envoyées : phone=$phone');
+      print('🔐 === TENTATIVE DE CONNEXION ===');
+      print('📱 Téléphone: $phone');
+      print('🌐 URL: ${ApiConfig.baseUrl}/auth/login');
 
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/login'),
@@ -23,97 +26,144 @@ class AuthService {
         }),
       ).timeout(const Duration(seconds: 60));
 
-      print('Code de statut de la réponse : ${response.statusCode}');
-      print('Corps de la réponse : ${response.body}');
-      print('En-têtes de la réponse : ${response.headers}');
+      print('📡 Status: ${response.statusCode}');
+      print('📦 Response: ${response.body}');
 
       switch (response.statusCode) {
         case 200:
           try {
             final decodedResponse = json.decode(response.body);
-            print('Réponse décodée : $decodedResponse');
+            print('✅ Connexion réussie');
+            print('🔄 Décodage de la réponse...');
+            
             final authResponse = AuthResponse.fromJson(decodedResponse);
-            await storage.write(key: 'jwt_token', value: authResponse.accessToken);
+            
+            // Stockage du token
+            await _saveToken(authResponse.accessToken);
+            
+            // Démarrer le timer de rafraîchissement si nécessaire
+            _setupTokenRefresh(authResponse.accessToken);
+            
             return authResponse;
           } catch (e) {
-            throw Exception('Erreur lors du traitement de la réponse: $e\nRéponse reçue: ${response.body}');
+            print('❌ Erreur de traitement: $e');
+            throw Exception('Erreur lors du traitement de la réponse: $e');
           }
-        case 302:
-          final redirectUrl = response.headers['location'];
-          if (redirectUrl != null) {
-            final redirectResponse = await http.post(
-              Uri.parse(redirectUrl),
-              headers: ApiConfig.headers,
-              body: json.encode({
-                'username': phone,
-                'password': password,
-              }),
-            ).timeout(const Duration(seconds: 60));
-            return handleResponse(redirectResponse); 
-          }
-          throw Exception('Redirection détectée sans URL');
-        case 400:
-          final errorBody = json.decode(response.body);
-          throw Exception('Requête invalide: ${errorBody['message'] ?? 'Erreur inconnue'}');
         case 401:
+          print('❌ Authentification échouée');
           final errorBody = json.decode(response.body);
-          throw Exception('Non autorisé: ${errorBody['message'] ?? 'Erreur inconnue'}');
-        case 404:
-          throw Exception('Route non trouvée');
-        case 500:
-          final errorBody = json.decode(response.body);
-          if (errorBody['data'] == 'Bad credentials') {
-            throw Exception('Login ou mot de passe incorrect');
-          } else {
-            throw Exception('Erreur serveur: ${errorBody['message'] ?? 'Erreur inconnue'}');
-          }
+          throw Exception('Identifiants incorrects');
         default:
-          throw Exception('Erreur inattendue (${response.statusCode})');
+          print('❌ Erreur ${response.statusCode}');
+          throw Exception('Erreur de connexion (${response.statusCode})');
       }
-    } on http.ClientException catch (e) {
-      throw Exception('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
-    } on TimeoutException catch (e) {
-      throw Exception('Le serveur ne répond pas. Veuillez réessayer plus tard.');
-    } on FormatException catch (e) {
-      throw Exception('Erreur de format de réponse');
     } catch (e) {
-      if (e.toString().contains('Login ou mot de passe incorrect')) {
-        rethrow;  // Renvoie l'erreur originale si c'est déjà une erreur de credentials
-      }
-      throw Exception('Une erreur est survenue. Veuillez réessayer.');
+      print('❌ ERREUR: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> _saveToken(String token) async {
+    try {
+      await storage.write(key: TOKEN_KEY, value: token);
+      print('💾 Token sauvegardé');
+    } catch (e) {
+      print('❌ Erreur de sauvegarde du token: $e');
+      throw Exception('Impossible de sauvegarder le token');
     }
   }
 
   Future<String?> getToken() async {
     try {
-      final token = await storage.read(key: 'jwt_token');
+      final token = await storage.read(key: TOKEN_KEY);
       if (token != null && token.isNotEmpty) {
-        print('Token récupéré : ${token.substring(0, min(10, token.length))}...');
         return token;
       }
+      print('⚠️ Aucun token trouvé');
       return null;
     } catch (e) {
-      print('Erreur lors de la récupération du token : $e');
+      print('❌ Erreur de récupération du token: $e');
       return null;
+    }
+  }
+
+  Future<bool> isTokenValid() async {
+    try {
+      final token = await getToken();
+      if (token == null) return false;
+
+      // Décoder le token
+      final parts = token.split('.');
+      if (parts.length != 3) return false;
+
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      final data = json.decode(decoded);
+
+      // Vérifier l'expiration
+      final expiration = DateTime.fromMillisecondsSinceEpoch(data['exp'] * 1000);
+      final isValid = DateTime.now().isBefore(expiration);
+      
+      print(isValid ? '✅ Token valide' : '⚠️ Token expiré');
+      return isValid;
+    } catch (e) {
+      print('❌ Erreur de validation du token: $e');
+      return false;
+    }
+  }
+
+  void _setupTokenRefresh(String token) {
+    // Annuler l'ancien timer s'il existe
+    _tokenRefreshTimer?.cancel();
+
+    try {
+      // Décoder le token pour obtenir l'expiration
+      final parts = token.split('.');
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      final data = json.decode(decoded);
+
+      final expiration = DateTime.fromMillisecondsSinceEpoch(data['exp'] * 1000);
+      final now = DateTime.now();
+      
+      // Calculer le délai avant l'expiration (moins 5 minutes pour la marge)
+      final refreshDelay = expiration.difference(now) - const Duration(minutes: 5);
+      
+      if (refreshDelay.isNegative) {
+        print('⚠️ Token déjà expiré ou proche de l\'expiration');
+        return;
+      }
+
+      // Configurer le timer pour le rafraîchissement
+      _tokenRefreshTimer = Timer(refreshDelay, () async {
+        print('🔄 Rafraîchissement du token nécessaire');
+        // Implémenter la logique de rafraîchissement ici si nécessaire
+      });
+    } catch (e) {
+      print('❌ Erreur dans la configuration du refresh: $e');
     }
   }
 
   Future<void> logout() async {
     try {
-      await storage.delete(key: 'jwt_token');
-      print('Déconnexion réussie - Token supprimé');
+      print('🔐 Déconnexion...');
+      await storage.delete(key: TOKEN_KEY);
+      _tokenRefreshTimer?.cancel();
+      print('✅ Déconnexion réussie');
     } catch (e) {
-      print('Erreur lors de la déconnexion : $e');
+      print('❌ Erreur de déconnexion: $e');
       throw Exception('Échec de la déconnexion');
     }
   }
 
-  Future<AuthResponse> handleResponse(http.Response response) async {
-    try {
-      final decodedResponse = json.decode(response.body);
-      return AuthResponse.fromJson(decodedResponse);
-    } catch (e) {
-      throw Exception('Erreur lors du traitement de la réponse');
+  Future<bool> checkAuthStatus() async {
+    final isValid = await isTokenValid();
+    if (!isValid) {
+      await logout();
+      return false;
     }
+    return true;
   }
 }
