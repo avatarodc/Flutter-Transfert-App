@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'widgets/balance_qr_card.dart';
 import 'widgets/quick_actions.dart';
-import 'widgets/transfer_form_card.dart';         
-import 'widgets/recent_transactions_card.dart';    
+import 'widgets/recent_transactions_card.dart';
 import '../../models/transaction.dart';
 import '../../widgets/custom_drawer.dart';
 
@@ -16,29 +15,14 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final List<Transaction> _mockTransactions = [
-    Transaction(
-      date: '2024-03-08',
-      amount: '50.000',
-      type: 'Envoi',
-      recipient: '+221778889999',
-      status: 'Succès',
-    ),
-    Transaction(
-      date: '2024-03-07',
-      amount: '25.000',
-      type: 'Réception',
-      recipient: '+221776665555',
-      status: 'Succès',
-    ),
-  ];
+  final GlobalKey<RecentTransactionsCardState> _transactionsCardKey = GlobalKey<RecentTransactionsCardState>();
 
   void _handleTransfer(String type, String recipient, double amount) {
     debugPrint('Type: $type, Recipient: $recipient, Amount: $amount');
   }
 
   void _handleViewAllTransactions() {
-    debugPrint('View all transactions clicked');
+    Navigator.pushNamed(context, '/transactions');
   }
 
   PreferredSizeWidget _buildAppBar() {
@@ -149,6 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       actions: [
+        // ... Reste du code des actions
         TweenAnimationBuilder(
           duration: const Duration(milliseconds: 900),
           tween: Tween<double>(begin: 0, end: 1),
@@ -230,7 +215,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  @override
+  Future<void> _handleRefresh() async {
+    // Rafraîchir les transactions
+    await _transactionsCardKey.currentState?.refresh();
+    // Ajoutez ici d'autres rafraîchissements si nécessaire
+  }
+
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
@@ -239,9 +230,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       endDrawer: const CustomDrawer(),
       body: RefreshIndicator(
         color: const Color(0xFF8E21F0),
-        onRefresh: () async {
-          await Future.delayed(const Duration(seconds: 1));
-        },
+        onRefresh: _handleRefresh,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
@@ -252,19 +241,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-              Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const BalanceQrCard(),  // Plus besoin des paramètres
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
+                  child: const BalanceQrCard(),
+                ),
                 const SizedBox(height: 24),
                 const QuickActions(),
                 const SizedBox(height: 24),
@@ -279,24 +268,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ],
                   ),
-                  child: TransferFormCard(
-                    onTransfer: _handleTransfer,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
                   child: RecentTransactionsCard(
-                    transactions: _mockTransactions,
+                    key: _transactionsCardKey,
                     onViewAll: _handleViewAllTransactions,
                   ),
                 ),

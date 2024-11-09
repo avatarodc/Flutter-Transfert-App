@@ -32,9 +32,9 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo/papa.png"
+  image_path: "assets/images/logo/next.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/logo/papa.png"
+  adaptive_icon_foreground: "assets/images/logo/next.png"
 
 flutter_native_splash:
   color: "#FFFFFF"
@@ -42,7 +42,7 @@ flutter_native_splash:
   color_dark: "#FFFFFF"
   image_dark: assets/images/logo/next.png
   android_12:
-    image: assets/images/logo/papa.png
+    image: assets/images/logo/next.png
     icon_background_color: "#FFFFFF"
     image_dark: assets/images/logo/next.png
     icon_background_color_dark: "#FFFFFF"
@@ -51,9 +51,7 @@ flutter:
   uses-material-design: true
   
   assets:
-    - assets/images/logo/pis.jpeg
     - assets/images/logo/next.png
-    - assets/images/logo/nexus.png
-    - assets/images/logo/papa.png
+
 
 
