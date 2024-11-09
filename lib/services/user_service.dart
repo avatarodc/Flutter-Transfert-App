@@ -1,17 +1,26 @@
-import 'package:flutter_app/models/user.dart';
-import 'package:flutter_app/services/api_service.dart';
-
+import 'api_service.dart';
 
 class UserService {
   final ApiService _apiService = ApiService();
 
-  Future<List<User>> getUsers() async {
-    final usersJson = await _apiService.get('users');
-    return (usersJson as List).map((json) => User.fromJson(json)).toList();
-  }
-
-  Future<User> createUser(User user) async {
-    final createdUserJson = await _apiService.post('users', user.toJson());
-    return User.fromJson(createdUserJson);
+  Future<Map<String, dynamic>> register({
+    required String nomComplet,
+    required String numeroTelephone,
+    required String email,
+    required String password,
+    required String confirmPassword,
+  }) async {
+    try {
+      final response = await _apiService.post('users/register/client', {
+        'nomComplet': nomComplet,
+        'numeroTelephone': numeroTelephone,
+        'email': email,
+        'password': password,
+        'confirmPassword': confirmPassword,
+      });
+      return response;
+    } catch (e) {
+      throw Exception('Erreur lors de l\'inscription: $e');
+    }
   }
 }

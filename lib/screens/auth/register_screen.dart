@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/user_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -70,59 +71,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return null;
   }
 
-  Future<void> _handleRegister() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+ Future<void> _handleRegister() async {
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isLoading = true;
+    });
 
-      try {
-        final userData = {
-          'nomComplet': _nomCompletController.text,
-          'numeroTelephone': _phoneController.text,
-          'email': _emailController.text,
-          'password': _passwordController.text,
-          'confirmPassword': _confirmPasswordController.text,
-        };
+    try {
+      final userService = UserService();
+      final response = await userService.register(
+        nomComplet: _nomCompletController.text,
+        numeroTelephone: _phoneController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        confirmPassword: _confirmPasswordController.text,
+      );
 
-        await Future.delayed(const Duration(seconds: 2));
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Inscription réussie',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: const Color(0xFF8E21F0),
-              duration: const Duration(seconds: 1),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Inscription réussie',
+              style: GoogleFonts.poppins(),
             ),
-          );
+            backgroundColor: const Color(0xFF8E21F0),
+            duration: const Duration(seconds: 2),
+          ),
+        );
 
-          await Future.delayed(const Duration(seconds: 1));
+        // Attendez un peu avant de rediriger
+        await Future.delayed(const Duration(seconds: 2));
+        
+        // Redirigez vers la page de connexion
+        if (mounted) {
           Navigator.pop(context);
         }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Erreur lors de l\'inscription',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: Colors.red,
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Erreur lors de l\'inscription: ${e.toString()}',
+              style: GoogleFonts.poppins(),
             ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
+}
 
 
   @override
