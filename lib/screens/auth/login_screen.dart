@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/auth_service.dart';  // Ajoutez cette importation
 import 'register_screen.dart';
-import '../home/dashboard_screen.dart'; 
+import '../home/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();  // Ajoutez cette ligne
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -34,21 +36,25 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  Future<void> _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+Future<void> _handleLogin() async {
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isLoading = true;
+    });
 
-      try {
-        final loginData = {
-          'numeroTelephone': _phoneController.text,
-          'password': _passwordController.text,
-        };
+    try {
+      String phoneNumber = _phoneController.text;
+      if (!phoneNumber.startsWith('+221')) {
+        phoneNumber = '+221${_phoneController.text}';
+      }
 
-        await Future.delayed(const Duration(seconds: 2));
+      final authResponse = await _authService.login(
+        phoneNumber,
+        _passwordController.text,
+      );
 
-        if (mounted) {
+      if (mounted) {
+        if (authResponse.status == 'SUCCESS') {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -61,7 +67,6 @@ class _LoginScreenState extends State<LoginScreen> {
           );
 
           await Future.delayed(const Duration(seconds: 1));
-
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -69,27 +74,34 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
         }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Erreur de connexion',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: Colors.red,
+      }
+    } catch (e) {
+      if (mounted) {
+        String errorMessage = 'Login ou mot de passe incorrect';
+        if (!e.toString().contains('Login ou mot de passe incorrect')) {
+          errorMessage = 'Erreur de connexion, veuillez réessayer';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              errorMessage,
+              style: GoogleFonts.poppins(),
             ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
