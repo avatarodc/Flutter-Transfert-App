@@ -13,7 +13,7 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark, // Changé en dark pour le fond blanc
       systemNavigationBarColor: Colors.white,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
@@ -35,6 +35,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF8E21F0),
           primary: const Color(0xFF8E21F0),
+          background: Colors.white,
+          surface: Colors.white,
         ),
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
@@ -45,24 +47,28 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.white,
           foregroundColor: const Color(0xFF8E21F0),
           elevation: 0,
-          centerTitle: true,
+          centerTitle: false, // Aligné à gauche pour plus de modernité
           systemOverlayStyle: SystemUiOverlayStyle.dark,
           titleTextStyle: GoogleFonts.poppins(
             color: const Color(0xFF8E21F0),
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.w600,
+          ),
+          iconTheme: const IconThemeData(
+            color: Color(0xFF8E21F0),
+            size: 24,
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: Colors.grey[50], // Légèrement grisé pour contraste
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+            borderSide: BorderSide(color: Colors.grey[200]!, width: 1),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -91,7 +97,7 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF8E21F0),
             foregroundColor: Colors.white,
-            elevation: 4,
+            elevation: 2, // Réduit pour un look plus moderne
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -109,19 +115,20 @@ class MyApp extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             textStyle: GoogleFonts.poppins(
               fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
         cardTheme: CardTheme(
           color: Colors.white,
-          elevation: 4,
+          elevation: 2, // Réduit pour un look plus moderne
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey[100]!, width: 1), // Ajout d'une bordure subtile
           ),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withOpacity(0.08), // Ombre plus subtile
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
             TargetPlatform.android: CupertinoPageTransitionsBuilder(),

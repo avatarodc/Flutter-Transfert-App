@@ -124,244 +124,114 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF8E21F0),
-              const Color(0xFF8E21F0).withOpacity(0.9),
-              Colors.white,
-            ],
-            stops: const [0.0, 0.2, 0.4],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Bouton retour avec style moderne
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.grey[200]!,
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: const Icon(Icons.arrow_back, 
+                          color: Color(0xFF8E21F0),
+                          size: 22,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ),
-                    Center(
-                      child: Container(
-                        height: 100,
-                        width: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              spreadRadius: 2,
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/logo/pis.jpeg',
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Inscription',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
+                  ),
+                  const SizedBox(height: 20),
 
-                    // Champs de formulaire avec conteneurs stylisés
-                    Container(
+                  // Logo
+                  Center(
+                    child: Container(
+                      height: 100,
+                      width: 100,
                       decoration: BoxDecoration(
+                        shape: BoxShape.circle,
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
+                            color: const Color(0xFF8E21F0).withOpacity(0.1),
+                            spreadRadius: 1,
+                            blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: TextFormField(
-                        controller: _nomCompletController,
-                        style: GoogleFonts.poppins(),
-                        decoration: InputDecoration(
-                          labelText: 'Nom complet',
-                          labelStyle: GoogleFonts.poppins(color: const Color(0xFF8E21F0)),
-                          prefixIcon: const Icon(Icons.person, color: Color(0xFF8E21F0)),
-                          border: InputBorder.none,
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/images/logo/next.png',
+                          fit: BoxFit.cover,
                         ),
-                        textCapitalization: TextCapitalization.words,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer votre nom complet';
-                          }
-                          return null;
-                        },
                       ),
                     ),
-                    const SizedBox(height: 16),
+                  ),
+                  const SizedBox(height: 24),
 
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextFormField(
-                        controller: _phoneController,
-                        style: GoogleFonts.poppins(),
-                        decoration: InputDecoration(
-                          labelText: 'Numéro de téléphone',
-                          labelStyle: GoogleFonts.poppins(color: const Color(0xFF8E21F0)),
-                          hintText: '+221776543210',
-                          hintStyle: GoogleFonts.poppins(color: Colors.grey),
-                          prefixIcon: const Icon(Icons.phone, color: Color(0xFF8E21F0)),
-                          border: InputBorder.none,
-                        ),
-                        keyboardType: TextInputType.phone,
-                        validator: _validatePhone,
-                      ),
+                  // Titre
+                  Text(
+                    'Inscription',
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF8E21F0),
                     ),
-                    const SizedBox(height: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32), 
 
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextFormField(
-                        controller: _emailController,
-                        style: GoogleFonts.poppins(),
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                          labelStyle: GoogleFonts.poppins(color: const Color(0xFF8E21F0)),
-                          prefixIcon: const Icon(Icons.email, color: Color(0xFF8E21F0)),
-                          border: InputBorder.none,
+                  // Champs de formulaire
+                  ..._buildFormFields(),
+
+                  const SizedBox(height: 24),
+
+                  // Bouton d'inscription
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF8E21F0).withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
                         ),
-                        keyboardType: TextInputType.emailAddress,
-                        validator: _validateEmail,
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextFormField(
-                        controller: _passwordController,
-                        style: GoogleFonts.poppins(),
-                        decoration: InputDecoration(
-                          labelText: 'Mot de passe',
-                          labelStyle: GoogleFonts.poppins(color: const Color(0xFF8E21F0)),
-                          prefixIcon: const Icon(Icons.lock, color: Color(0xFF8E21F0)),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                              color: const Color(0xFF8E21F0),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
-                          ),
-                          border: InputBorder.none,
-                        ),
-                        obscureText: _obscurePassword,
-                        validator: _validatePassword,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextFormField(
-                        controller: _confirmPasswordController,
-                        style: GoogleFonts.poppins(),
-                        decoration: InputDecoration(
-                          labelText: 'Confirmer le mot de passe',
-                          labelStyle: GoogleFonts.poppins(color: const Color(0xFF8E21F0)),
-                          prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF8E21F0)),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                              color: const Color(0xFF8E21F0),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscureConfirmPassword = !_obscureConfirmPassword;
-                              });
-                            },
-                          ),
-                          border: InputBorder.none,
-                        ),
-                        obscureText: _obscureConfirmPassword,
-                        validator: _validateConfirmPassword,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    ElevatedButton(
+                    child: ElevatedButton(
                       onPressed: _isLoading ? null : _handleRegister,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF8E21F0),
                         foregroundColor: Colors.white,
-                        elevation: 4,
+                        elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -384,26 +254,213 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ),
                     ),
-                    const SizedBox(height: 16),
+                  ),
+                  const SizedBox(height: 16),
 
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        'Déjà un compte ? Connectez-vous',
-                        style: GoogleFonts.poppins(
-                          color: const Color(0xFF8E21F0),
-                          fontWeight: FontWeight.w500,
-                        ),
+                  // Lien de connexion
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'Déjà un compte ? Connectez-vous',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF8E21F0),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // Méthode pour construire les champs de formulaire
+  List<Widget> _buildFormFields() {
+    return [
+      _buildFormField(
+        controller: _nomCompletController,
+        labelText: 'Nom complet',
+        icon: Icons.person,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Veuillez entrer votre nom complet';
+          }
+          return null;
+        },
+        textCapitalization: TextCapitalization.words,
+      ),
+      const SizedBox(height: 16),
+
+      _buildFormField(
+        controller: _phoneController,
+        labelText: 'Numéro de téléphone',
+        icon: Icons.phone,
+        validator: _validatePhone,
+        keyboardType: TextInputType.phone,
+        hintText: '+221776543210',
+      ),
+      const SizedBox(height: 16),
+
+      _buildFormField(
+        controller: _emailController,
+        labelText: 'Email',
+        icon: Icons.email,
+        validator: _validateEmail,
+        keyboardType: TextInputType.emailAddress,
+      ),
+      const SizedBox(height: 16),
+
+      _buildPasswordField(
+        controller: _passwordController,
+        labelText: 'Mot de passe',
+        icon: Icons.lock,
+        obscureText: _obscurePassword,
+        onToggleVisibility: () {
+          setState(() {
+            _obscurePassword = !_obscurePassword;
+          });
+        },
+        validator: _validatePassword,
+      ),
+      const SizedBox(height: 16),
+
+      _buildPasswordField(
+        controller: _confirmPasswordController,
+        labelText: 'Confirmer le mot de passe',
+        icon: Icons.lock_outline,
+        obscureText: _obscureConfirmPassword,
+        onToggleVisibility: () {
+          setState(() {
+            _obscureConfirmPassword = !_obscureConfirmPassword;
+          });
+        },
+        validator: _validateConfirmPassword,
+      ),
+    ];
+  }
+
+  // Widget pour construire un champ de formulaire standard
+  Widget _buildFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    required String? Function(String?) validator,
+    TextInputType? keyboardType,
+    String? hintText,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        style: GoogleFonts.poppins(fontSize: 14),
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: GoogleFonts.poppins(
+            color: const Color(0xFF8E21F0),
+            fontSize: 14,
+          ),
+          hintText: hintText,
+          hintStyle: GoogleFonts.poppins(
+            color: Colors.grey[400],
+            fontSize: 13,
+          ),
+          prefixIcon: Icon(icon, color: const Color(0xFF8E21F0), size: 20),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
+        ),
+        keyboardType: keyboardType,
+        textCapitalization: textCapitalization,
+        validator: validator,
+      ),
+    );
+  }
+
+  // Widget pour construire un champ de mot de passe
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    required bool obscureText,
+    required VoidCallback onToggleVisibility,
+    required String? Function(String?) validator,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        style: GoogleFonts.poppins(fontSize: 14),
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: GoogleFonts.poppins(
+            color: const Color(0xFF8E21F0),
+            fontSize: 14,
+          ),
+          prefixIcon: Icon(icon, color: const Color(0xFF8E21F0), size: 20),
+          suffixIcon: IconButton(
+            icon: Icon(
+              obscureText ? Icons.visibility : Icons.visibility_off,
+              color: const Color(0xFF8E21F0),
+              size: 20,
+            ),
+            onPressed: onToggleVisibility,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
+        ),
+        obscureText: obscureText,
+        validator: validator,
       ),
     );
   }

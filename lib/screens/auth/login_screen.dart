@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../services/auth_service.dart';  // Ajoutez cette importation
+import '../../services/auth_service.dart';
 import 'register_screen.dart';
 import '../home/dashboard_screen.dart';
+import '../../widgets/custom_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-  final AuthService _authService = AuthService();  // Ajoutez cette ligne
+  final AuthService _authService = AuthService();
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -28,255 +29,356 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _validatePhone(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Veuillez entrer votre numéro de téléphone';
+      return 'Veuillez entrer votre numéro';
     }
     if (!RegExp(r'^\+\d{8,15}$').hasMatch(value)) {
-      return 'Format invalide. Exemple: +221776543210';
+      return 'Format: +221776543210';
     }
     return null;
   }
 
-Future<void> _handleLogin() async {
-  if (_formKey.currentState!.validate()) {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _handleLogin() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    try {
-      String phoneNumber = _phoneController.text;
-      if (!phoneNumber.startsWith('+221')) {
-        phoneNumber = '+221${_phoneController.text}';
-      }
-
-      final authResponse = await _authService.login(
-        phoneNumber,
-        _passwordController.text,
-      );
-
-      if (mounted) {
-        if (authResponse.status == 'SUCCESS') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Connexion réussie',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: const Color(0xFF8E21F0),
-              duration: const Duration(seconds: 1),
-            ),
-          );
-
-          await Future.delayed(const Duration(seconds: 1));
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const DashboardScreen(),
-            ),
-          );
+      try {
+        String phoneNumber = _phoneController.text;
+        if (!phoneNumber.startsWith('+221')) {
+          phoneNumber = '+221${_phoneController.text}';
         }
-      }
-    } catch (e) {
-      if (mounted) {
-        String errorMessage = 'Login ou mot de passe incorrect';
-        if (!e.toString().contains('Login ou mot de passe incorrect')) {
-          errorMessage = 'Erreur de connexion, veuillez réessayer';
-        }
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              errorMessage,
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
+
+        final authResponse = await _authService.login(
+          phoneNumber,
+          _passwordController.text,
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+
+        if (mounted) {
+          if (authResponse.status == 'SUCCESS') {
+            showCustomSnackbar(
+              context,
+              'Connexion réussie!',
+              true,
+            );
+
+            await Future.delayed(const Duration(seconds: 2));
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const DashboardScreen(),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          String errorMessage = 'Identifiants incorrects';
+          if (!e.toString().contains('Login ou mot de passe incorrect')) {
+            errorMessage = 'Erreur de connexion';
+          }
+          
+          showCustomSnackbar(
+            context,
+            errorMessage,
+            false,
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
-}
 
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF8E21F0),
-              const Color(0xFF8E21F0).withOpacity(0.9),
-              Colors.white,
-            ],
-            stops: const [0.0, 0.2, 0.4],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 60),
-                    Center(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 40),
+                  // Logo animé
+                  TweenAnimationBuilder(
+                    duration: const Duration(milliseconds: 800),
+                    tween: Tween<double>(begin: 0, end: 1),
+                    builder: (context, double value, child) {
+                      return Transform.scale(
+                        scale: value,
+                        child: child,
+                      );
+                    },
+                    child: Center(
                       child: Container(
-                        height: 120,
-                        width: 120,
+                        height: 90,
+                        width: 90,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
+                          color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              spreadRadius: 2,
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              color: const Color(0xFF8E21F0).withOpacity(0.1),
+                              spreadRadius: 1,
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/logo/next.png',
-                            fit: BoxFit.cover,
+                        child: Hero(
+                          tag: 'logo',
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/images/logo/next.png',
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    Text(
+                  ),
+                  const SizedBox(height: 24),
+                  // Titre animé
+                  TweenAnimationBuilder(
+                    duration: const Duration(milliseconds: 800),
+                    tween: Tween<double>(begin: 0, end: 1),
+                    builder: (context, double value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, 20 * (1 - value)),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Text(
                       'Connexion',
                       style: GoogleFonts.poppins(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: const Color(0xFF8E21F0),
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 32),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextFormField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        style: GoogleFonts.poppins(),
-                        decoration: InputDecoration(
-                          labelText: 'Numéro de téléphone',
-                          labelStyle: GoogleFonts.poppins(color: const Color(0xFF8E21F0)),
-                          hintText: '+221776543210',
-                          hintStyle: GoogleFonts.poppins(color: Colors.grey),
-                          prefixIcon: const Icon(Icons.phone, color: Color(0xFF8E21F0)),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
+                  ),
+                  const SizedBox(height: 30),
+                  // Champs de formulaire
+                  TweenAnimationBuilder(
+                    duration: const Duration(milliseconds: 1000),
+                    tween: Tween<double>(begin: 0, end: 1),
+                    builder: (context, double value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, 30 * (1 - value)),
+                          child: child,
                         ),
-                        validator: _validatePhone,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        style: GoogleFonts.poppins(),
-                        decoration: InputDecoration(
-                          labelText: 'Mot de passe',
-                          labelStyle: GoogleFonts.poppins(color: const Color(0xFF8E21F0)),
-                          prefixIcon: const Icon(Icons.lock, color: Color(0xFF8E21F0)),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                              color: const Color(0xFF8E21F0),
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        // Champ téléphone
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.grey[200]!,
+                              width: 1,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            style: GoogleFonts.poppins(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: 'Téléphone',
+                              labelStyle: GoogleFonts.poppins(
+                                color: const Color(0xFF8E21F0),
+                                fontSize: 14,
+                              ),
+                              hintText: '+221776543210',
+                              hintStyle: GoogleFonts.poppins(
+                                color: Colors.grey[400],
+                                fontSize: 13,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.phone,
+                                color: Color(0xFF8E21F0),
+                                size: 20,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                            ),
+                            validator: _validatePhone,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Champ mot de passe
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.grey[200]!,
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            style: GoogleFonts.poppins(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: 'Mot de passe',
+                              labelStyle: GoogleFonts.poppins(
+                                color: const Color(0xFF8E21F0),
+                                fontSize: 14,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.lock,
+                                color: Color(0xFF8E21F0),
+                                size: 20,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                  color: const Color(0xFF8E21F0),
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Entrez votre mot de passe';
+                              }
+                              if (value.length < 4) {
+                                return 'Minimum 4 caractères';
+                              }
+                              return null;
                             },
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Bouton de connexion
+                  TweenAnimationBuilder(
+                    duration: const Duration(milliseconds: 1200),
+                    tween: Tween<double>(begin: 0, end: 1),
+                    builder: (context, double value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, 40 * (1 - value)),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF8E21F0).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
-                          filled: true,
-                          fillColor: Colors.white,
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _handleLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8E21F0),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer votre mot de passe';
-                          }
-                          if (value.length < 4) {
-                            return 'Le mot de passe doit contenir au moins 4 caractères';
-                          }
-                          return null;
-                        },
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                'Se connecter',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _handleLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF8E21F0),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  ),
+                  const SizedBox(height: 16),
+                  // Lien d'inscription
+                  TweenAnimationBuilder(
+                    duration: const Duration(milliseconds: 1400),
+                    tween: Tween<double>(begin: 0, end: 1),
+                    builder: (context, double value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, 50 * (1 - value)),
+                          child: child,
                         ),
-                        elevation: 4,
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              'Se connecter',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
+                      );
+                    },
+                    child: TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -286,15 +388,16 @@ Future<void> _handleLogin() async {
                         );
                       },
                       child: Text(
-                        'Pas encore de compte ? Inscrivez-vous',
+                        'Pas de compte ? Inscrivez-vous',
                         style: GoogleFonts.poppins(
                           color: const Color(0xFF8E21F0),
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
