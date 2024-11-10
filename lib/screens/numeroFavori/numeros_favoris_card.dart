@@ -182,17 +182,37 @@ class _NumerosFavorisCardState extends State<NumerosFavorisCard> {
           ],
         ),
         actions: [
-          TextButton(
-            child: Text('Annuler', style: GoogleFonts.poppins()),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[200],
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Annuler',
+              style: GoogleFonts.poppins(
+                color: Colors.grey[800],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             onPressed: () => Navigator.pop(context, false),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF8E21F0),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: Text(
               'Ajouter',
-              style: GoogleFonts.poppins(color: Colors.white),
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             onPressed: () => Navigator.pop(context, true),
           ),
@@ -263,24 +283,47 @@ class _NumerosFavorisCardState extends State<NumerosFavorisCard> {
       builder: (context) => AlertDialog(
         title: Text(
           'Confirmer la suppression',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          style: GoogleFonts.poppins(
+            color: const Color(0xFF8E21F0),
+            fontWeight: FontWeight.w600,
+          ),
         ),
         content: Text(
           'Voulez-vous vraiment supprimer ce numéro des favoris ?',
           style: GoogleFonts.poppins(),
         ),
         actions: [
-          TextButton(
-            child: Text('Annuler', style: GoogleFonts.poppins()),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[200],
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Annuler',
+              style: GoogleFonts.poppins(
+                color: Colors.grey[800],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             onPressed: () => Navigator.pop(context, false),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: Text(
               'Supprimer',
-              style: GoogleFonts.poppins(color: Colors.white),
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             onPressed: () => Navigator.pop(context, true),
           ),
@@ -441,10 +484,9 @@ class _NumerosFavorisCardState extends State<NumerosFavorisCard> {
                   ),
                   title: Text(
                     favori.nom ?? 'Sans nom',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                    ),
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
                   ),
                   subtitle: Text(
                     favori.numeroTelephone,
@@ -453,44 +495,26 @@ class _NumerosFavorisCardState extends State<NumerosFavorisCard> {
                       fontSize: 12,
                     ),
                   ),
-                  trailing: Row(
-                   mainAxisSize: MainAxisSize.min,
-                   children: [
-                     IconButton(
-                       icon: const Icon(
-                         Icons.phone_outlined,
-                         color: Color(0xFF8E21F0),
-                         size: 18,
-                       ),
-                       onPressed: () {
-                         // TODO: Implémenter l'appel
-                         // Vous pouvez utiliser url_launcher pour faire l'appel
-                         // final uri = Uri.parse('tel:${favori.numeroTelephone}');
-                         // launchUrl(uri);
-                       },
-                     ),
-                     IconButton(
-                       icon: const Icon(
-                         Icons.delete_outline,
-                         color: Colors.red,
-                         size: 18,
-                       ),
-                       onPressed: () => _supprimerFavori(favori),
-                     ),
-                   ],
-                 ),
-               );
-             },
-           ),
-         const SizedBox(height: 12),
-       ],
-     ),
-   );
- }
+                  trailing: IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.red,
+                      size: 18,
+                    ),
+                    onPressed: () => _supprimerFavori(favori),
+                  ),
+                );
+              },
+            ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
 
- @override
- void dispose() {
-   _searchController.dispose();
-   super.dispose();
- }
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 }
