@@ -55,7 +55,7 @@ enum TransactionType {
 }
 
 class Transaction {
-  final dynamic id; // Changé de String à dynamic pour gérer les IDs numériques
+  final dynamic id;
   final TransactionType type;
   final String recipient;
   final String sender;
@@ -66,6 +66,7 @@ class Transaction {
   final String? reference;
   final String? motifAnnulation;
   final DateTime? dateAnnulation;
+  final String? description;  // Ajouté pour le drawer
 
   Transaction({
     required this.id,
@@ -79,7 +80,15 @@ class Transaction {
     this.reference,
     this.motifAnnulation,
     this.dateAnnulation,
+    this.description,
   });
+
+  // Getter pour vérifier si la transaction peut être annulée
+  bool get isCancleable {
+    return status.toUpperCase() == 'EN_ATTENTE' && 
+           type != TransactionType.ANNULE && 
+           dateAnnulation == null;
+  }
 
   String get formattedDate {
     try {
@@ -99,13 +108,25 @@ class Transaction {
     return numberFormat.format(amount);
   }
 
+  String get statusFormatted {
+    switch (status.toUpperCase()) {
+      case 'EN_ATTENTE':
+        return 'En attente';
+      case 'TERMINE':
+        return 'Terminé';
+      case 'ANNULE':
+        return 'Annulé';
+      default:
+        return status;
+    }
+  }
+
   factory Transaction.fromJson(Map<String, dynamic> json) {
-    // Logger pour debug
     print('🔄 Converting JSON to Transaction: $json');
 
     try {
       return Transaction(
-        id: json['id'], // Accepte maintenant les IDs numériques
+        id: json['id'],
         type: _parseTransactionType(json['typeTransaction']),
         recipient: json['autrePartiePrenante']?.toString() ?? '',
         sender: json['estEmetteur'] == true 
@@ -120,6 +141,7 @@ class Transaction {
         dateAnnulation: json['dateAnnulation'] != null
             ? DateTime.parse(json['dateAnnulation'].toString())
             : null,
+        description: json['description']?.toString(),
       );
     } catch (e) {
       print('❌ Error in Transaction.fromJson: $e');

@@ -4,6 +4,15 @@ import '../../../models/transaction.dart';
 import '../../../services/transaction_service.dart';
 import '../../../services/api_config.dart';
 
+extension TransactionExtension on Transaction {
+  bool get isCancelable {
+    final now = DateTime.now();
+    final transactionTime = DateTime.parse(this.date); 
+    return now.difference(transactionTime).inMinutes < 30 && isCancleable;
+  }
+}
+
+
 class AllTransactionsPage extends StatefulWidget {
   const AllTransactionsPage({Key? key}) : super(key: key);
 
@@ -49,7 +58,7 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
       
       setState(() {
         _transactions = transactions;
-        _transactions.sort((a, b) => b.date.compareTo(a.date)); // Trier par date décroissante
+        _transactions.sort((a, b) => b.date.compareTo(a.date));
         _isLoading = false;
       });
     } catch (e) {
@@ -72,6 +81,258 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
         ),
       );
     }
+  }
+
+  Widget _buildDetailTile(String label, String value, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toUpperCase()) {
+      case 'COMPLETE':
+        return Colors.green;
+      case 'EN_ATTENTE':
+        return Colors.orange;
+      case 'ANNULE':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  void _showTransactionDetails(Transaction transaction) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SafeArea(
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // En-tête
+              Container(
+                padding: const EdgeInsets.only(
+                  top: 16,
+                  left: 20,
+                  right: 20,
+                  bottom: 20,
+                ),
+                decoration: BoxDecoration(
+                  color: transaction.type.color.withOpacity(0.1),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Barre de poignée
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    // Titre et bouton fermer
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Détails de la transaction',
+                            style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF8E21F0),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                          color: Colors.grey[600],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: transaction.type.color.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        transaction.type.icon,
+                        size: 40,
+                        color: transaction.type.color,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      transaction.formattedAmount,
+                      style: GoogleFonts.poppins(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Corps des détails
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    _buildDetailTile(
+                      'Type',
+                      transaction.type.label,
+                      Icons.category,
+                      transaction.type.color,
+                    ),
+                    _buildDetailTile(
+                      'Date',
+                      transaction.formattedDate,
+                      Icons.access_time,
+                      Colors.blue,
+                    ),
+                    _buildDetailTile(
+                      'Statut',
+                      transaction.statusFormatted,
+                      Icons.info_outline,
+                      _getStatusColor(transaction.status),
+                    ),
+                    _buildDetailTile(
+                      'Bénéficiaire',
+                      transaction.recipient,
+                      Icons.person_outline,
+                      Colors.green,
+                    ),
+                    if (transaction.reference != null)
+                      _buildDetailTile(
+                        'Référence',
+                        transaction.reference!,
+                        Icons.tag,
+                        Colors.indigo,
+                      ),
+                    if (transaction.motifAnnulation != null)
+                      _buildDetailTile(
+                        'Motif d\'annulation',
+                        transaction.motifAnnulation!,
+                        Icons.cancel_outlined,
+                        Colors.red,
+                      ),
+                  ],
+                ),
+              ),
+
+              // Bouton d'annulation si disponible
+              if (transaction.isCancelable)
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await _transactionService.cancelTransaction(
+                          transaction.id.toString(),
+                        );
+                        if (!mounted) return;
+                        Navigator.pop(context);
+                        _loadTransactions();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Transaction annulée avec succès'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Erreur: ${e.toString()}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Annuler la transaction',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -202,9 +463,7 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () {
-                  // Ici vous pouvez ajouter la navigation vers les détails de la transaction
-                },
+                onTap: () => _showTransactionDetails(transaction),
                 borderRadius: BorderRadius.circular(16),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -229,9 +488,8 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Flexible(
+                                Expanded(
                                   child: Text(
                                     transaction.formattedAmount,
                                     style: GoogleFonts.poppins(

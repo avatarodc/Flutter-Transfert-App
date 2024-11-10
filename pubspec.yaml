@@ -19,6 +19,8 @@ dependencies:
   flutter_svg: ^2.0.14
   google_fonts: ^6.1.0
   qr_flutter: ^4.1.0
+  flutter_contacts: ^1.0.0
+  permission_handler: ^10.2.0
   
   
 
