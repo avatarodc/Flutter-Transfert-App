@@ -26,8 +26,8 @@ class AuthService {
         }),
       ).timeout(const Duration(seconds: 60));
 
-      print('📡 Status: ${response.statusCode}');
-      print('📦 Response: ${response.body}');
+      // print('📡 Status: ${response.statusCode}');
+      // print('📦 Response: ${response.body}');
 
       switch (response.statusCode) {
         case 200:

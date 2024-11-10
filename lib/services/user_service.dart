@@ -44,10 +44,10 @@ class UserService {
 
       final response = await _apiService.get('users');
       final users = (response as List).map((json) => User.fromJson(json)).toList();
-      developer.log('✅ ${users.length} utilisateurs récupérés', name: 'UserService');
+      // developer.log('✅ ${users.length} utilisateurs récupérés', name: 'UserService');
       return users;
     } catch (e) {
-      developer.log('❌ Erreur dans getAllUsers()', name: 'UserService', error: e);
+      // developer.log('❌ Erreur dans getAllUsers()', name: 'UserService', error: e);
       throw Exception('Erreur lors de la récupération des utilisateurs: $e');
     }
   }
@@ -263,7 +263,7 @@ class UserService {
       }
 
       if (_currentUser != null) {
-        developer.log('✅ Utilisateur en cache: ${_currentUser?.toJson()}', name: 'UserService');
+        // developer.log('✅ Utilisateur en cache: ${_currentUser?.toJson()}', name: 'UserService');
         return _currentUser;
       }
 
@@ -275,11 +275,11 @@ class UserService {
 
       final decodedToken = _decodeToken(token);
       final email = decodedToken['sub'] as String;
-      developer.log('📧 Email extrait: $email', name: 'UserService');
+      // developer.log('📧 Email extrait: $email', name: 'UserService');
 
       final user = await getUserByEmail(email);
       _currentUser = user;
-      developer.log('✅ Utilisateur récupéré: ${user.toJson()}', name: 'UserService');
+      // developer.log('✅ Utilisateur récupéré: ${user.toJson()}', name: 'UserService');
 
       return user;
     } catch (e) {

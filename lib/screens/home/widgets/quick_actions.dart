@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'all_transactions_page.dart'; 
-import '../../send/send_options_page.dart'; 
-
+import '../../send/send_options_page.dart';
+import '../../numeroFavori/numeros_favoris_page.dart'; // À créer
 
 class QuickActions extends StatelessWidget {
   const QuickActions({Key? key}) : super(key: key);
@@ -21,15 +21,20 @@ class QuickActions extends StatelessWidget {
         // Ajoutez la logique pour le scanner
         break;
       case 'envoyer':
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const SendOptionsPage(),
-        ),
-      );
-      break;
-      case 'banque':
-        // Ajoutez la logique pour la banque
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SendOptionsPage(),
+          ),
+        );
+        break;
+      case 'favoris':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const NumerosFavorisPage(), // Page à créer
+          ),
+        );
         break;
     }
   }
@@ -92,10 +97,10 @@ class QuickActions extends StatelessWidget {
         ),
         _buildQuickActionButton(
           context: context,
-          icon: Icons.account_balance,
-          label: 'Banque',
-          color: Colors.orange,
-          action: 'banque',
+          icon: Icons.star_outline,  // Changé pour une étoile
+          label: 'Favoris',          // Changé pour 'Favoris'
+          color: const Color(0xFF8E21F0),  // Utilisation de votre couleur violette
+          action: 'favoris',
         ),
         _buildQuickActionButton(
           context: context,

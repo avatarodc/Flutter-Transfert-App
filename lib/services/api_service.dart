@@ -11,7 +11,7 @@ class ApiService {
   // GET Request
   Future<dynamic> get(String endpoint) async {
     try {
-      print('🌐 GET request to: ${ApiConfig.baseUrl}/$endpoint');
+      // print('🌐 GET request to: ${ApiConfig.baseUrl}/$endpoint');
       final token = await storage.read(key: TOKEN_KEY);
       
       if (token == null && endpoint != 'auth/login') {
@@ -19,7 +19,7 @@ class ApiService {
         throw Exception('Non authentifié');
       }
 
-      print('🔑 Token utilisé: ${token?.substring(0, min(20, token.length ?? 0))}...');
+      // print('🔑 Token utilisé: ${token?.substring(0, min(20, token.length ?? 0))}...');
       
       final response = await http.get(
         Uri.parse('${ApiConfig.baseUrl}/$endpoint'),
@@ -29,8 +29,8 @@ class ApiService {
         },
       );
 
-      print('📡 Status: ${response.statusCode}');
-      print('📦 Response: ${response.body}');
+      // print('📡 Status: ${response.statusCode}');
+      // print('📦 Response: ${response.body}');
 
       return _handleResponse(response);
     } catch (e) {
@@ -53,7 +53,7 @@ class ApiService {
       }
 
       if (token != null) {
-        print('🔑 Token utilisé: ${token.substring(0, min(20, token.length))}...');
+        // print('🔑 Token utilisé: ${token.substring(0, min(20, token.length))}...');
       }
 
       final response = await http.post(
@@ -65,8 +65,8 @@ class ApiService {
         body: json.encode(data),
       );
 
-      print('📡 Status: ${response.statusCode}');
-      print('📦 Response: ${response.body}');
+      // print('📡 Status: ${response.statusCode}');
+      // print('📦 Response: ${response.body}');
 
       return _handleResponse(response);
     } catch (e) {
@@ -87,7 +87,7 @@ class ApiService {
         throw Exception('Non authentifié');
       }
 
-      print('🔑 Token utilisé: ${token.substring(0, min(20, token.length))}...');
+      // print('🔑 Token utilisé: ${token.substring(0, min(20, token.length))}...');
       print('📦 Data: $data');
 
       final response = await http.put(
@@ -99,8 +99,8 @@ class ApiService {
         body: json.encode(data),
       );
 
-      print('📡 Status: ${response.statusCode}');
-      print('📦 Response: ${response.body}');
+      // print('📡 Status: ${response.statusCode}');
+      // print('📦 Response: ${response.body}');
 
       return _handleResponse(response);
     } catch (e) {
@@ -121,7 +121,7 @@ class ApiService {
         throw Exception('Non authentifié');
       }
 
-      print('🔑 Token utilisé: ${token.substring(0, min(20, token.length))}...');
+      // print('🔑 Token utilisé: ${token.substring(0, min(20, token.length))}...');
 
       final response = await http.delete(
         Uri.parse('${ApiConfig.baseUrl}/$endpoint'),
@@ -131,8 +131,8 @@ class ApiService {
         },
       );
 
-      print('📡 Status: ${response.statusCode}');
-      print('📦 Response: ${response.body}');
+      // print('📡 Status: ${response.statusCode}');
+      // print('📦 Response: ${response.body}');
 
       return _handleResponse(response);
     } catch (e) {
@@ -149,7 +149,7 @@ class ApiService {
         if (response.body.isEmpty) return null;
         
         final decodedResponse = json.decode(response.body);
-        print('✅ Response décodée: $decodedResponse');
+        // print('✅ Response décodée: $decodedResponse');
         
         // Vérifier si la réponse contient data
         if (decodedResponse is Map && decodedResponse.containsKey('data')) {

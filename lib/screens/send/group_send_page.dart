@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/transaction_service.dart';
+
 
 class GroupSendPage extends StatefulWidget {
   const GroupSendPage({Key? key}) : super(key: key);
@@ -14,6 +16,7 @@ class _GroupSendPageState extends State<GroupSendPage> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   bool _isLoading = false;
+  final _transactionService = TransactionService();
   final List<TextEditingController> _phoneControllers = [TextEditingController()];
 
   // Calculs améliorés et dynamiques
@@ -93,16 +96,120 @@ class _GroupSendPageState extends State<GroupSendPage> {
     }
   }
 
-  void _handleSend() {
-    if (_formKey.currentState?.validate() ?? false) {
+void _handleSend() async {
+  if (_formKey.currentState?.validate() ?? false) {
+    try {
       setState(() => _isLoading = true);
+
+      // Récupérer tous les numéros de téléphone
+      final recipientPhoneNumbers = _phoneControllers
+          .map((controller) => controller.text.trim())
+          .toList();
+
+      // Vérifier s'il y a des numéros en double
+      final uniqueNumbers = Set<String>.from(recipientPhoneNumbers);
+      if (uniqueNumbers.length != recipientPhoneNumbers.length) {
+        throw Exception('Des numéros de téléphone sont en double');
+      }
+
+      // Récupérer le montant
+      final amount = double.tryParse(_amountController.text);
+      if (amount == null || amount <= 0) {
+        throw Exception('Montant invalide');
+      }
+
+      // Afficher un indicateur de chargement
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Traitement en cours...'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+
+      // Appeler le service pour effectuer le transfert multiple
+      await _transactionService.transferMultiple(
+        recipientPhoneNumbers: recipientPhoneNumbers,
+        amount: amount,
+      );
+
+      if (!mounted) return;
+
+      // Succès : fermer la page et afficher le message
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Transferts effectués avec succès'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+    } catch (e) {
+      if (!mounted) return;
       
-      Future.delayed(const Duration(seconds: 1), () {
-        _showSuccessDialog();
+      // Extraire le message d'erreur
+      String errorMessage = e.toString();
+      String title = 'Erreur de transfert';
+      
+      // Nettoyer le message d'erreur
+      if (errorMessage.contains('Exception:')) {
+        errorMessage = errorMessage.replaceAll('Exception:', '').trim();
+      }
+
+      // Personnaliser le titre selon le type d'erreur
+      if (errorMessage.contains('Solde insuffisant')) {
+        title = 'Solde insuffisant';
+      }
+      
+      // Afficher une boîte de dialogue d'erreur
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title == 'Solde insuffisant')
+                Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.orange,
+                  size: 48,
+                ),
+              const SizedBox(height: 16),
+              Text(
+                errorMessage,
+                style: GoogleFonts.poppins(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'OK',
+                style: GoogleFonts.poppins(
+                  color: const Color(0xFF8E21F0),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      if (mounted) {
         setState(() => _isLoading = false);
-      });
+      }
     }
   }
+}
 
   void _showSuccessDialog() {
     showDialog(

@@ -123,7 +123,7 @@ String get formattedDate {
   }
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
-    print('🔄 Converting JSON to Transaction: $json');
+    // print('🔄 Converting JSON to Transaction: $json');
 
     try {
       return Transaction(
