@@ -90,14 +90,15 @@ class Transaction {
            dateAnnulation == null;
   }
 
-  String get formattedDate {
-    try {
-      final dateTime = DateTime.parse(date);
-      return DateFormat('dd/MM/yyyy HH:mm', 'fr_FR').format(dateTime);
-    } catch (e) {
-      return date;
-    }
+String get formattedDate {
+  try {
+    final dateTime = DateTime.parse(date);
+    return DateFormat('dd/MM/yyyy HH:mm', 'fr_FR').format(dateTime);
+  } catch (e) {
+    return date; 
   }
+}
+
 
   String get formattedAmount {
     final numberFormat = NumberFormat.currency(

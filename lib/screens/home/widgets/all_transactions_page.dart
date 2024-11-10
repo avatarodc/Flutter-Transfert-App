@@ -7,11 +7,10 @@ import '../../../services/api_config.dart';
 extension TransactionExtension on Transaction {
   bool get isCancelable {
     final now = DateTime.now();
-    final transactionTime = DateTime.parse(this.date); 
+    final transactionTime = DateTime.parse(this.date);
     return now.difference(transactionTime).inMinutes < 30 && isCancleable;
   }
 }
-
 
 class AllTransactionsPage extends StatefulWidget {
   const AllTransactionsPage({Key? key}) : super(key: key);
@@ -53,9 +52,9 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
       });
 
       final transactions = await _transactionService.getMyTransactions();
-      
+
       if (!mounted) return;
-      
+
       setState(() {
         _transactions = transactions;
         _transactions.sort((a, b) => b.date.compareTo(a.date));
@@ -63,12 +62,12 @@ class _AllTransactionsPageState extends State<AllTransactionsPage> {
       });
     } catch (e) {
       if (!mounted) return;
-      
+
       setState(() {
         _error = 'Erreur lors du chargement des transactions';
         _isLoading = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Erreur: ${e.toString()}'),

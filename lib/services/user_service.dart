@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -10,17 +11,34 @@ class UserService {
   final AuthService _authService;
   final storage = const FlutterSecureStorage();
   User? _currentUser;
+  Timer? _refreshTimer; // Timer pour le rafraîchissement
   static const String TOKEN_KEY = 'jwt_token';
 
-  UserService(this._apiService) : _authService = AuthService();
+  UserService(this._apiService) : _authService = AuthService() {
+    _startAutoRefresh(); // Démarrer le rafraîchissement automatique
+  }
 
   User? get currentUser => _currentUser;
+
+  void _startAutoRefresh() {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      await refreshUserData(); // Appeler refreshUserData toutes les 5 secondes
+    });
+  }
+
+  void dispose() {
+    stopAutoRefresh(); // Appel correct, ne tente pas d'utiliser la valeur de retour
+  }
+
+     Future<void> stopAutoRefresh() async {
+  _refreshTimer?.cancel();
+}
 
   // Récupérer tous les utilisateurs
   Future<List<User>> getAllUsers() async {
     try {
       developer.log('📋 Récupération de tous les utilisateurs', name: 'UserService');
-      
+
       final isAuth = await _checkAuthentication();
       if (!isAuth) throw Exception('Non authentifié');
 
@@ -38,7 +56,7 @@ class UserService {
   Future<User> createUser(Map<String, dynamic> userData) async {
     try {
       developer.log('👤 Création d\'un nouvel utilisateur: $userData', name: 'UserService');
-      
+
       final isAuth = await _checkAuthentication();
       if (!isAuth) throw Exception('Non authentifié');
 
@@ -61,11 +79,8 @@ class UserService {
     required String confirmPassword,
   }) async {
     try {
-      developer.log(
-        '📝 Inscription: $email, $nomComplet, $numeroTelephone',
-        name: 'UserService'
-      );
-      
+      developer.log('📝 Inscription: $email, $nomComplet, $numeroTelephone', name: 'UserService');
+
       final response = await _apiService.post('users/register/client', {
         'nomComplet': nomComplet,
         'numeroTelephone': numeroTelephone,
@@ -73,7 +88,7 @@ class UserService {
         'password': password,
         'confirmPassword': confirmPassword,
       });
-      
+
       developer.log('✅ Inscription réussie', name: 'UserService');
       return response;
     } catch (e) {
@@ -86,7 +101,7 @@ class UserService {
   Future<User> getUserById(String id) async {
     try {
       developer.log('🔍 Récupération utilisateur ID: $id', name: 'UserService');
-      
+
       final isAuth = await _checkAuthentication();
       if (!isAuth) throw Exception('Non authentifié');
 
@@ -104,7 +119,7 @@ class UserService {
   Future<void> deleteUser(String id) async {
     try {
       developer.log('🗑️ Suppression utilisateur: $id', name: 'UserService');
-      
+
       final isAuth = await _checkAuthentication();
       if (!isAuth) throw Exception('Non authentifié');
 
@@ -120,7 +135,7 @@ class UserService {
   Future<User> getUserByPhone(String numeroTelephone) async {
     try {
       developer.log('📱 Recherche par téléphone: $numeroTelephone', name: 'UserService');
-      
+
       final isAuth = await _checkAuthentication();
       if (!isAuth) throw Exception('Non authentifié');
 
@@ -138,7 +153,7 @@ class UserService {
   Future<List<User>> getUsersByRole(String roleId) async {
     try {
       developer.log('👥 Recherche utilisateurs rôle: $roleId', name: 'UserService');
-      
+
       final isAuth = await _checkAuthentication();
       if (!isAuth) throw Exception('Non authentifié');
 
@@ -156,7 +171,7 @@ class UserService {
   Future<User> getUserByEmail(String email) async {
     try {
       developer.log('📧 Recherche par email: $email', name: 'UserService');
-      
+
       final isAuth = await _checkAuthentication();
       if (!isAuth) throw Exception('Non authentifié');
 
@@ -174,7 +189,7 @@ class UserService {
   Future<List<User>> getActiveUsers() async {
     try {
       developer.log('👥 Récupération utilisateurs actifs', name: 'UserService');
-      
+
       final isAuth = await _checkAuthentication();
       if (!isAuth) throw Exception('Non authentifié');
 
@@ -240,7 +255,7 @@ class UserService {
   Future<User?> getCurrentUser() async {
     try {
       developer.log('👤 Récupération utilisateur courant', name: 'UserService');
-      
+
       final isAuth = await _checkAuthentication();
       if (!isAuth) {
         developer.log('⚠️ Non authentifié', name: 'UserService');
@@ -265,7 +280,7 @@ class UserService {
       final user = await getUserByEmail(email);
       _currentUser = user;
       developer.log('✅ Utilisateur récupéré: ${user.toJson()}', name: 'UserService');
-      
+
       return user;
     } catch (e) {
       developer.log('❌ Erreur dans getCurrentUser()', name: 'UserService', error: e);
@@ -275,11 +290,11 @@ class UserService {
   }
 
   // Rafraîchir les données utilisateur
-  Future<User?> refreshUserData() async {
+  Future<void> refreshUserData() async {
     try {
       developer.log('🔄 Rafraîchissement données utilisateur', name: 'UserService');
       _currentUser = null;
-      return await getCurrentUser();
+      await getCurrentUser(); // Assurez-vous que getCurrentUser() est correctement appelé
     } catch (e) {
       developer.log('❌ Erreur dans refreshUserData()', name: 'UserService', error: e);
       throw Exception('Erreur lors du rafraîchissement des données: $e');
@@ -336,8 +351,7 @@ class UserService {
 
   Future<void> _handleAuthError(dynamic error) async {
     if (error.toString().contains('Non authentifié') ||
-        error.toString().contains('Token expiré') ||
-        error.toString().contains('Non autorisé')) {
+        error.toString().contains('Token expiré')) {
       await logout();
     }
   }
