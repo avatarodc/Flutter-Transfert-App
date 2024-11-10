@@ -54,7 +54,7 @@ class _BalanceQrCardState extends State<BalanceQrCard> {
 
   void _setupAutoRefresh() {
     print('⏰ Configuration du rafraîchissement automatique');
-    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
       print('⏰ Rafraîchissement automatique déclenché');
       _refreshBalance();
     });

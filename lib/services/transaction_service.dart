@@ -265,27 +265,51 @@ class TransactionService {
     }
   }
 
-  Future<void> cancelTransaction(String transactionId) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/cancel'),
-        body: json.encode({'transactionId': transactionId}),
-        headers: {
-          ...await ApiConfig.getAuthHeaders(),
-          'Content-Type': 'application/json',
-        },
-      );
-      
-      if (response.statusCode == 200) {
-        _notifyTransactionCompleted(); // Notifier après annulation réussie
-      } else {
-        throw Exception('Impossible d\'annuler la transaction');
+    Future<void> cancelTransaction(String transactionId) async {
+      try {
+        print('🔄 Tentative d\'annulation de la transaction: $transactionId');
+        
+        final requestBody = {
+          'transactionId': transactionId
+        };
+        print('📤 Request body: $requestBody');
+        
+        final response = await http.post(
+          Uri.parse('$baseUrl/transactions/cancel'),
+          body: json.encode(requestBody),
+          headers: {
+            ...await ApiConfig.getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+        );
+        
+        print('📥 Response status: ${response.statusCode}');
+        print('📥 Response body: ${response.body}');
+        
+        if (response.statusCode == 200) {
+          print('✅ Transaction annulée avec succès');
+          _notifyTransactionCompleted();
+        } else {
+          final errorResponse = json.decode(response.body);
+          print('❌ Erreur HTTP: ${response.statusCode}');
+          print('❌ Message d\'erreur: ${errorResponse['message'] ?? errorResponse['data'] ?? 'Aucun message'}');
+          
+          if (response.statusCode == 401) {
+            throw Exception('Session expirée. Veuillez vous reconnecter.');
+          } else if (response.statusCode == 400) {
+            throw Exception(errorResponse['message'] ?? errorResponse['data'] ?? 'Requête invalide');
+          } else {
+            throw Exception(errorResponse['message'] ?? 
+                          errorResponse['data'] ?? 
+                          'Impossible d\'annuler la transaction (Code: ${response.statusCode})');
+          }
+        }
+      } catch (e) {
+        print('❌ Erreur lors de l\'annulation: $e');
+        print('❌ Stack trace: ${StackTrace.current}');
+        throw Exception('Erreur lors de l\'annulation de la transaction: $e');
       }
-    } catch (e) {
-      print('❌ Cancel transaction error: $e');
-      rethrow;
     }
-  }
 
   Future<Transaction> getTransactionById(String id) async {
     try {

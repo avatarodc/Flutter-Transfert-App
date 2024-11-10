@@ -211,51 +211,109 @@ class RecentTransactionsCardState extends State<RecentTransactionsCard> {
                 ),
               ),
 
-              // Bouton d'annulation si disponible
-              if (transaction.isCancleable)
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      try {
+            // Dans le bouton d'annulation
+            if (transaction.isCancleable)
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      // Ajout d'une boîte de dialogue de confirmation
+                      final confirmer = await showDialog<bool>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          title: Text(
+                            'Confirmation',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          content: Text(
+                            'Voulez-vous vraiment annuler cette transaction ?',
+                            style: GoogleFonts.poppins(),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: Text(
+                                'Non',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: Text(
+                                'Oui, annuler',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirmer == true) {
+                        // Afficher un indicateur de chargement
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Annulation en cours...'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+
+                        // Appeler le service pour annuler
                         await _transactionService.cancelTransaction(
                           transaction.id.toString(),
                         );
+
                         if (!mounted) return;
+                        
+                        // Fermer la modal
                         Navigator.pop(context);
-                        refresh();
+                        
+                        // Rafraîchir les données
+                        await refresh();
+
+                        // Afficher le message de succès
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Transaction annulée avec succès'),
                             backgroundColor: Colors.green,
                           ),
                         );
-                      } catch (e) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Erreur: ${e.toString()}'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
                       }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                    } catch (e) {
+                      if (!mounted) return;
+                      
+                      // Afficher l'erreur
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Erreur: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      'Annuler la transaction',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                  ),
+                  child: Text(
+                    'Annuler la transaction',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ),
+              ),
             ],
           ),
         ),
